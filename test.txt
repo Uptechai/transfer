@@ -1,0 +1,354 @@
+<?php
+session_start();
+$id = $_SESSION["usrId"];
+
+// Turn error reporting on
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+//get the replicate API key
+require_once("../db-connection/replicateAccessKey.php");
+
+// $urls = array("");
+
+// $srcUrl = "https://www.uptechai.com/tempImgs/6436a5ce618fe.png";
+
+//get ident of img from the request
+$imgId = $_POST["imgId"];
+
+//get description of img from the request
+$imgDescription = $_POST["description"];
+
+// Sanitize the image ID to only allow alphanumeric characters
+$sanitizedId = preg_replace('/[^a-zA-Z0-9.]/', '', $imgId);
+
+$srcUrl = "https://www.uptechai.com/tempImgs/" . $sanitizedId;
+
+
+// specify default parameters
+$a_prompt = "best quality, extremely detailed, ultra realistic";
+$negative_prompt = "ugly, text, font, writing, logo, unrealistic, watermark, hands, fingers, cropped, worst quality, low quality, drawing, painting, dark, depressing, reflection, lid, soap dispenser, cap, attachments, overflow";
+$variable = "product photo of a product";
+$extension = "unreal engine, octane render, bokeh, vray, houdini render, quixel megascans, arnold render, 8k uhd, raytracing, cgi, lumen reflections, cgsociety, ultra realistic, 100mm, film photography, dslr, cinema4d, studio quality, film grain";
+
+$variable = "product photo of a $imgDescription";
+
+$template = $_POST["theme"];
+
+// if the user uses themes, get the corresponding prompt
+if (isset($template)) {
+    
+    switch ($template) {
+        case "mountains":
+            $prompt = "eye-level {$variable} on a rock in front of mountains with a beautiful lake, golden hour, 35mm, sharp, backlighting, {$extension}";
+            break;
+    
+        case "snow":
+            $prompt = "eye-level {$variable} on top of a rock in front of beautiful snowy  mountains, 35mm, sharp, winter, fresh snow layer, covered in snow, sun, {$extension}";
+            break;
+    
+        case "beach":
+            $prompt = "eye-level {$variable} on top of a rock in front of a beach with the ocean and blue summer sky, HDR, 8k, lumen reflections, sharp, white sand, leaves, sun, 100mm, {$extension}";
+            break;
+    
+        case "flowers":
+            $prompt = "eye-level {$variable} on top of a rock, background of nature with beautiful flowers and plants which are in sharp quality, HDR, e-commerce, natural colours, sharp, photorealism, hyperrealistic, summer concept";
+            break;
+    
+        case "marble":
+            $prompt = "{$variable} placed on marble floor, few freshgreen beautiful leaves around, HDR, 8k, lumen reflections, sharp, photorealism, hyperrealistic, summer concept, studio quality, octane render, lumen reflections";
+            break;
+    
+        case "fruits":
+            $prompt = "high resolution product photo of $imgDescription on darkgray marble, leaves, few juicy fruits, clean, studio quality, advertising, summer concept, 100mm, vertical top view, overhead shot, angel view";
+            break;
+    
+        case "jungle":
+            $prompt = "eye-level {$variable} on top of a rock, background of a tropic jungle, 8k, HDR, e-commerce, natural colours, sharp, photorealism, hyperrealistic, summer concept.";
+            break;
+    
+        case "rocks":
+            $prompt = "{$variable} on pebbles, background of thousands of a small pebblels, 8k, HDR, e-commerce, natural colours, sharp, photorealism, hyperrealistic, summer concept, vertical top view, angels view, overhead shot";
+            break;
+    
+        case "water":
+            $prompt = "high-resolution, photorealistic image of a $imgDescription with small dynamic water splash with crisp droplets and smooth, flowing water motions. water splash with a sense of movement and energy, visually balanced composition, HDR, ultra realistic, glas, studio shot, quality, advertising";
+            $negative_prompt = "reflections on the water surface";
+            break;
+    
+        case "kitchen":
+            $prompt = "high resolution product photo of $imgDescription on the kitchen table, modern, and clean, with neutral colors and minimal distractions. showcase a well organized, stylish space, on a wodden cutting board, HDR, ultra realistic, 35mm, herbs or spices all around, vertical top view, overhead shot, kitchen herbs";
+            break;
+    
+        case "minimalistic":
+            $prompt = "{$variable}, 3D render of a product in an empty room, smooth white lighting, with gradient, octane 3d, studio photography, ultra smooth surface, photorealism, studio shot, advertising";
+            break;
+    
+        case "gradience":
+            $prompt = "high-resolution, photorealistic image of a $imgDescription, gradient-themed background, harmonious blend of colors that gradually transition from one shade to another, creating a sense of balance and tranquility, studio shot, advertising";
+            break;
+    
+        default:
+            $prompt = "high-resolution, photorealistic image of a $imgDescription with small dynamic water splash with crisp droplets and smooth, flowing water motions. water splash with a sense of movement and energy, visually balanced composition, HDR, ultra realistic, glas, studio shot, quality, advertising";
+            $negative_prompt = "reflections on the water surface";
+    }
+}
+
+
+
+// Define the API URL
+$url = "https://api.replicate.com/v1/predictions";
+
+require_once("../db-connection/user.php");
+
+//check the credit score
+$stmt = $conn->prepare("SELECT * FROM user_general WHERE id = :id");
+$stmt->bindParam(":id", $_SESSION["usrId"]);
+$stmt->execute();
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+$creditScore = $row['credits'];
+
+if ($creditScore <= 0) {
+    http_response_code(400);
+    exit();
+}
+
+// check if session ID is set
+if (isset($_SESSION['usrId'])) {
+    $usrId = $_SESSION['usrId'];
+  
+    $stmt = $conn->prepare("SELECT * FROM user_general WHERE id = :id");
+    $stmt->bindParam(":id", $usrId);
+    $stmt->execute();
+    $count = $stmt->rowCount();
+
+    if ($count > 0) {
+        // the user exists...proceed with the script
+        
+        
+        //specify the api version
+        $version = '854e8727697a057c525cdb45ab037f64ecca770a1769cc52287c2e56472a247b';
+        
+    
+        // Make the initial POST request to create a new prediction
+        $ch = curl_init('https://api.replicate.com/v1/predictions');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Token ' . $replicateApiToken,
+            'Content-Type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+            'version' => $version,
+            'input' => [
+                'image' => $srcUrl,
+                'prompt' => $prompt,
+                'num_samples' => "4",
+                'n_prompt' => $negative_prompt,
+                'a_prompt' => $a_prompt,
+                'value_threshold' => 0.01,
+                'distance_threshold' => 0.01
+            ]
+        ]));
+    
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+    
+        if ($httpCode >= 200 && $httpCode < 300) {
+            // Decode the JSON response
+            $predictionData = json_decode($response, true);
+    
+            // Poll the API periodically for an update
+            $predictionId = $predictionData['id'];
+            $status = $predictionData['status'];
+            while ($status !== 'succeeded') {
+                sleep(2); // Wait for 2 seconds before polling again
+    
+                $ch = curl_init("https://api.replicate.com/v1/predictions/{$predictionId}");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Authorization: Token ' . $replicateApiToken,
+                    'Content-Type: application/json'
+                ]);
+    
+                $response = curl_exec($ch);
+                curl_close($ch);
+    
+                $predictionData = json_decode($response, true);
+                $status = $predictionData['status'];
+            }
+    
+            //store the url in a variable
+            // $imgUrls = json_encode($predictionData['output']);
+            $urls = $predictionData['output'];
+            // Delete the first element
+            array_shift($urls);
+            
+            // echo $imgUrls;
+            
+            // overlayImg($imgUrls, $image_path);
+            
+    
+        } else {
+            echo "API call failed with HTTP code {$httpCode}.<br>";
+            echo "Error: {$error}<br>";
+            echo "Response: {$response}<br>";
+        }
+        
+       
+        
+        
+    } else {
+        // user does not exist
+        header("location: https://uptechai.com/register");
+    }
+  
+} else {
+    //no id is set
+    header("location: https://uptechai.com/register");
+}
+
+// 
+// 
+
+
+$images = array(); //this array will store ALL images
+$newImages = array();//this only stores new images
+
+// Upload to imagekit
+use ImageKit\ImageKit;
+require_once __DIR__ . '/../vendor/autoload.php';
+
+//the image to lay on top
+//$srcUrl = 'https://ik.imagekit.io/0zw3lz2yn/production-images/box_512x512.png'; // Replace with the URL of your source image‘
+$srcData = file_get_contents($srcUrl);
+
+foreach($urls as $item) {
+    
+    $destUrl = $item;
+    $destData = file_get_contents($destUrl);
+    $dest = imagecreatefromstring($destData);
+    
+    $src = imagecreatefromstring($srcData);
+    
+    // Save alpha channel
+    imagesavealpha($src, true);
+    
+    // Fill with transparent pixels
+    imagefill($src, 0, 0, imagecolorallocatealpha($src, 0, 0, 0, 127));
+    
+    // Copy image without merging alpha channel
+    imagecopy($dest, $src, 0, 0, 0, 0, imagesx($src), imagesy($src));
+    
+    ob_start();
+    imagepng($dest);
+    $pngData = ob_get_clean();
+    
+    $base64 = base64_encode($pngData);
+    
+    // Upload the image
+    $imageKit = new ImageKit(
+        "public_KSBMZdOo9dZUG71jJdfYpHgW6Rc",
+        "private_E06ZMJ/kf/icdet03Q/cg8gsADI=",
+        "https://ik.imagekit.io/0zw3lz2yn/"
+    );
+    
+    $imageParams = [
+        "file" => $base64,
+        "fileName" => "image.png",
+        "folder" => "production-images"
+    ];
+    
+    $imageResponse = $imageKit->upload($imageParams);
+    $imageName = $imageResponse->result->name;
+    $imageId = $imageResponse->result->fileId;
+    
+    array_push($images, array('name' => $imageName, 'id' => $imageId));
+    array_push($newImages, $imageName);
+}
+
+
+// echo json_encode($images);
+$imagesJson = json_encode($images);
+$newImagesJson = json_encode($newImages);
+
+
+require("../db-connection/user.php");
+
+// Get the current array
+$stmt = $conn->prepare("SELECT * FROM user_general WHERE id=:id");
+$stmt->bindParam(":id", $id);
+$stmt->execute(); // Execute the query
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$currentImagesJson = $row['images'];
+$currentCreditValue = $row['credits'];
+
+$newCredits = $currentCreditValue - 4;
+
+// echo $currentImagesJson;
+
+if ($currentImagesJson === null || $currentImagesJson === 'null' || $currentImagesJson === '') {
+    $stmt = $conn->prepare("UPDATE user_general SET images=:images, credits=:newCredits WHERE id=:id");
+    $stmt->bindParam(":images", $imagesJson);
+    $stmt->bindParam(":newCredits", $newCredits);
+    $stmt->bindParam(":id", $id);
+    $stmt->execute();
+    
+    // echo $mergedImagesJson;
+    
+    
+    // echo json_encode([$newImages]);
+    
+    echo json_encode([
+        'newImages' => $newImages,
+        'newCreditsScore' => $newCredits
+    ]);
+} else {
+    // Merge the current images with the new images
+    $currentImages = json_decode($currentImagesJson, true);
+    $images = json_decode($imagesJson, true);
+    $mergedImages = array_merge($currentImages, $images);
+    $mergedImagesJson = json_encode($mergedImages);
+
+    $stmt = $conn->prepare("UPDATE user_general SET images=:images, credits=:newCredits WHERE id=:id");
+    $stmt->bindParam(":images", $mergedImagesJson);
+    $stmt->bindParam(":newCredits", $newCredits);
+    $stmt->bindParam(":id", $id);
+    $stmt->execute();
+    
+    
+    // echo json_encode([$newImages]);
+    echo json_encode([
+        'newImages' => $newImages,
+        'newCreditsScore' => $newCredits
+    ]);
+}
+
+$randomNumber = rand(1, 10);
+
+if ($randomNumber == 10) {
+    $dir = "../tempImgs/"; // change this to the path of your image directory
+    $files = scandir($dir);
+    
+    $counter = 0;
+    
+    
+    foreach ($files as $file) {
+      if (is_file($dir . $file)) {
+        $last_modified = filemtime($dir . $file);
+        $current_time = time();
+        $diff = $current_time - $last_modified;
+        if ($diff > 600) { // delete files older than 10 minutes (600 seconds)
+            unlink($dir . $file);
+            $counter ++;
+        }
+      }
+    }
+}
+
+
+?> 
