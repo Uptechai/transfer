@@ -40,59 +40,87 @@ $template = $_POST["theme"];
 if (isset($template)) {
     
     switch ($template) {
-        case "mountains":
-            $prompt = "eye-level {$variable} on a rock in front of mountains with a beautiful lake, golden hour, 35mm, sharp, backlighting, {$extension}";
-            break;
+      case "mountains":
+        $prompt1 = "eye-level {$variable} on a rock in front of mountains with a beautiful lake, golden hour, 35mm, sharp, backlighting, {$extension}";
+        $prompt2 = "aerial view of {$variable} in front of a mountain range, winter, snow-covered peaks, 8k, HDR, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "snow":
-            $prompt = "eye-level {$variable} on top of a rock in front of beautiful snowy  mountains, 35mm, sharp, winter, fresh snow layer, covered in snow, sun, {$extension}";
-            break;
+      case "snow":
+        $prompt1 = "eye-level {$variable} on top of a rock in front of beautiful snowy  mountains, 35mm, sharp, winter, fresh snow layer, covered in snow, sun, {$extension}";
+        $prompt2 = "aerial view of {$variable} in a snowy landscape, snow-covered trees, mountains in the background, 8k, HDR, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "beach":
-            $prompt = "eye-level {$variable} on top of a rock in front of a beach with the ocean and blue summer sky, HDR, 8k, lumen reflections, sharp, white sand, leaves, sun, 100mm, {$extension}";
-            break;
+      case "beach":
+        $prompt1 = "eye-level {$variable} on top of a rock in front of a beach with the ocean and blue summer sky, HDR, 8k, lumen reflections, sharp, white sand, leaves, sun, 100mm, {$extension}";
+        $prompt2 = "aerial view of {$variable} on a tropical beach, crystal-clear water, palm trees, golden sand, 8k, HDR, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "flowers":
-            $prompt = "eye-level {$variable} on top of a rock, background of nature with beautiful flowers and plants which are in sharp quality, HDR, e-commerce, natural colours, sharp, photorealism, hyperrealistic, summer concept";
-            break;
+      case "flowers":
+        $prompt1 = "eye-level {$variable} on top of a rock, background of nature with beautiful flowers and plants which are in sharp quality, HDR, e-commerce, natural colours, sharp, photorealism, hyperrealistic, summer concept";
+        $prompt2 = "close-up of {$variable} in a field of wildflowers, 35mm, sharp, natural colours, bokeh, summer concept, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "marble":
-            $prompt = "{$variable} placed on marble floor, few freshgreen beautiful leaves around, HDR, 8k, lumen reflections, sharp, photorealism, hyperrealistic, summer concept, studio quality, octane render, lumen reflections";
-            break;
+      case "marble":
+        $prompt1 = "{$variable} placed on marble floor, few freshgreen beautiful leaves around, HDR, 8k, lumen reflections, sharp, photorealism, hyperrealistic, summer concept, studio quality, octane render, lumen reflections";
+        $prompt2 = "{$variable} on a marble countertop, modern kitchen, soft lighting, 35mm, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "fruits":
-            $prompt = "high resolution product photo of $imgDescription on darkgray marble, leaves, few juicy fruits, clean, studio quality, advertising, summer concept, 100mm, vertical top view, overhead shot, angel view";
-            break;
+      case "fruits":
+        $prompt1 = "high resolution product photo of $imgDescription on darkgray marble, leaves, few juicy fruits, clean, studio quality, advertising, summer concept, 100mm, vertical top view, overhead shot, angel view";
+        $prompt2 = "close-up of {$variable} on a cutting board, surrounded by sliced fruits, 35mm, sharp, natural colours, summer concept, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "jungle":
-            $prompt = "eye-level {$variable} on top of a rock, background of a tropic jungle, 8k, HDR, e-commerce, natural colours, sharp, photorealism, hyperrealistic, summer concept.";
-            break;
+     
+      case "jungle":
+        $prompt1 = "eye-level {$variable} on top of a rock, background of a tropic jungle, 8k, HDR, e-commerce, natural colours, sharp, photorealism, hyperrealistic, summer concept.";
+        $prompt2 = "aerial view of {$variable} in a dense jungle, misty atmosphere, vibrant greenery, 8k, HDR, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "rocks":
-            $prompt = "{$variable} on pebbles, background of thousands of a small pebblels, 8k, HDR, e-commerce, natural colours, sharp, photorealism, hyperrealistic, summer concept, vertical top view, angels view, overhead shot";
-            break;
+      case "rocks":
+        $prompt1 = "{$variable} on pebbles, background of thousands of a small pebblels, 8k, HDR, e-commerce, natural colours, sharp, photorealism, hyperrealistic, summer concept, vertical top view, angels view, overhead shot";
+        $prompt2 = "aerial view of {$variable} on a rocky shoreline, waves crashing against the rocks, dramatic landscape, 8k, HDR, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "water":
-            $prompt = "high-resolution, photorealistic image of a $imgDescription with small dynamic water splash with crisp droplets and smooth, flowing water motions. water splash with a sense of movement and energy, visually balanced composition, HDR, ultra realistic, glas, studio shot, quality, advertising";
-            $negative_prompt = "reflections on the water surface";
-            break;
+      case "water":
+        $prompt1 = "high-resolution, photorealistic image of a $imgDescription with small dynamic water splash with crisp droplets and smooth, flowing water motions. water splash with a sense of movement and energy, visually balanced composition, HDR, ultra realistic, glas, studio shot, quality, advertising";
+        $prompt2 = "aerial view of {$variable} in a clear blue ocean, coral reefs visible below the surface, 8k, HDR, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        $negative_prompt = "reflections on the water surface";
+        break;
     
-        case "kitchen":
-            $prompt = "high resolution product photo of $imgDescription on the kitchen table, modern, and clean, with neutral colors and minimal distractions. showcase a well organized, stylish space, on a wodden cutting board, HDR, ultra realistic, 35mm, herbs or spices all around, vertical top view, overhead shot, kitchen herbs";
-            break;
+      case "kitchen":
+        $prompt1 = "high resolution product photo of $imgDescription on the kitchen table, modern, and clean, with neutral colors and minimal distractions. showcase a well organized, stylish space, on a wodden cutting board, HDR, ultra realistic, 35mm, herbs or spices all around, vertical top view, overhead shot, kitchen herbs";
+        $prompt2 = "close-up of {$variable} in a professional kitchen, chef in the background, steam rising from the pot, 35mm, sharp, natural colours, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "minimalistic":
-            $prompt = "{$variable}, 3D render of a product in an empty room, smooth white lighting, with gradient, octane 3d, studio photography, ultra smooth surface, photorealism, studio shot, advertising";
-            break;
+      case "minimalistic":
+        $prompt1 = "{$variable}, 3D render of a product in an empty room, smooth white lighting, with gradient, octane 3d, studio photography, ultra smooth surface, photorealism, studio shot, advertising";
+        $prompt2 = "close-up of {$variable} on a white background, minimalist design, simple and elegant, 35mm, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        case "gradience":
-            $prompt = "high-resolution, photorealistic image of a $imgDescription, gradient-themed background, harmonious blend of colors that gradually transition from one shade to another, creating a sense of balance and tranquility, studio shot, advertising";
-            break;
+      case "gradience":
+        $prompt1 = "high-resolution, photorealistic image of a $imgDescription, gradient-themed background, harmonious blend of colors that gradually transition from one shade to another, creating a sense of balance and tranquility, studio shot, advertising";
+        $prompt2 = "close-up of {$variable} on a gradient background, minimalist design, simple and elegant, 35mm, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        break;
     
-        default:
-            $prompt = "high-resolution, photorealistic image of a $imgDescription with small dynamic water splash with crisp droplets and smooth, flowing water motions. water splash with a sense of movement and energy, visually balanced composition, HDR, ultra realistic, glas, studio shot, quality, advertising";
-            $negative_prompt = "reflections on the water surface";
+      default:
+        $prompt1 = "high-resolution, photorealistic image of a $imgDescription with small dynamic water splash with crisp droplets and smooth, flowing water motions. water splash with a sense of movement and energy, visually balanced composition, HDR, ultra realistic, glas, studio shot, quality, advertising";
+        $prompt2 = "aerial view of {$variable} in a dramatic landscape, 8k, HDR, photorealism, studio shot, advertising";
+        $prompt = (rand(0, 1) == 0) ? $prompt1 : $prompt2;
+        $negative_prompt = "reflections on the water surface";
     }
+
 }
 
 
